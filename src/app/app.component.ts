@@ -9,6 +9,8 @@ import { Square } from './square';
 import { Ship } from './ship';
 import { Shot } from './shot';
 
+//<img src="https://i.ibb.co/KX4QDVz/ship-live.png" alt="ship-live" border="0">
+
 @Component({
   selector: 'my-app',
   templateUrl: './app.component.html',
@@ -33,6 +35,8 @@ export class AppComponent implements OnInit {
 
   private ctx: CanvasRenderingContext2D;
   requestId;
+
+  interval0 = 4;
   interval1 = 10;
   interval2 = 50;
   interval3 = 100;
@@ -47,35 +51,45 @@ export class AppComponent implements OnInit {
   maxSoldiers = 8;
 
   direction = 1;
-  maxX = 0;
+  martianMaxX = 0;
+  martianSize = 32;
+  martinaMargin = 8;
+  martianMove = 6;
 
-  size = 20;
   shipSize = 30;
+  lives = 3;
+  score = 0;
+  imgLive;
+  wait = -1;
 
   toMove = 0;
 
+  into0 = 0;
   into1 = 0;
   into2 = 0;
   into3 = 0;
   pause = true;
-
-  image1;
 
   ngOnInit(): void {
     this.ctx = this.canvas.nativeElement.getContext('2d');
 
     this.ctx.fillStyle = 'red';
 
-    this.maxX = this.ctx.canvas.width / this.size - 2;
+    this.martianMaxX =
+      this.ctx.canvas.width - this.martianSize - this.martinaMargin;
 
-    this.image1 = new Image();
-    this.image1.src = '../assets/mar-sold-1.png';
+    this.imgLive = new Image();
+    this.imgLive.src = 'https://i.ibb.co/KX4QDVz/ship-live.png';
 
     this.createMartians();
     this.createShip();
     this.drawAll();
 
     //this.ngZone.runOutsideAngular(() => this.tick());
+    setInterval(() => {
+      this.tick0();
+    }, this.interval0);
+
     setInterval(() => {
       this.tick1();
     }, this.interval1);
@@ -89,6 +103,7 @@ export class AppComponent implements OnInit {
     }, this.interval3);
   }
 
+  /*
   @HostListener('window:keypress', ['$event'])
   keyEvent(event: KeyboardEvent) {
     if (event.code == 'Space') {
@@ -96,7 +111,7 @@ export class AppComponent implements OnInit {
     } else if (event.code == 'ShiftLeft') {
       this.fire();
     }
-  }
+  }*/
   @HostListener('window:keydown', ['$event'])
   keyEventDown(event: KeyboardEvent) {
     if (event.code == 'ArrowLeft') {
@@ -105,6 +120,10 @@ export class AppComponent implements OnInit {
     } else if (event.code == 'ArrowRight') {
       this.ship.acelerate();
       this.ship.moveRight();
+    } else if (event.code == 'Space') {
+      this.fire();
+    } else if (event.code == 'ShiftLeft') {
+      this.fire();
     }
   }
   @HostListener('window:keyup', ['$event'])
@@ -121,26 +140,37 @@ export class AppComponent implements OnInit {
   private createShip(): void {
     const x = this.ctx.canvas.width / this.shipSize / 2;
     const y = this.ctx.canvas.height / this.shipSize - 2;
-    this.ship = new Ship(this.ctx, x, y, this.shipSize);
+    this.ship = new Ship(this.ctx);
   }
 
   private createMartians() {
     var i, j;
+    var margin = this.martinaMargin;
+    var size = this.martianSize;
     for (i = 0; i < this.maxSquads; i++) {
       for (j = 0; j < this.maxSoldiers; j++) {
-        var y = 1 + i * 2;
-        var x = 1 + j * 2;
-        this.addMartian(x, y, this.size, 'soldier');
+        var y = size * 2 + i * (size + margin);
+        var x = size + j * (size + margin);
+        this.addMartian(x, y);
       }
     }
     this.toMove = 0;
+  }
+
+  tick0() {
+    if (this.into0 > 0 || this.pause) return;
+    this.into0++;
+    //console.log('INTO: ' + this.into1);
+    this.tickSquares();
+
+    //this.requestId = requestAnimationFrame(() => this.tick);
+    this.into0--;
   }
 
   tick1() {
     if (this.into1 > 0 || this.pause) return;
     this.into1++;
     //console.log('INTO: ' + this.into1);
-    this.tickSquares();
     this.tickShots();
 
     //this.requestId = requestAnimationFrame(() => this.tick);
@@ -169,30 +199,42 @@ export class AppComponent implements OnInit {
 
       if (found >= 0) {
         this.squares.splice(index, 1);
-        this.martians[found].color = this.deadColor;
+        this.martians[found].destroyed = true;
         this.martians[found].draw();
+
+        this.score += this.martians[found].score;
+        this.drawHead();
       }
     });
   }
   private tickShots(): void {
     this.shots.forEach((shot, index) => {
       if (!shot.draw()) this.shots.splice(index, 1);
-      var found = this.shipIn(shot.x, shot.y);
 
+      if (this.wait != -1) return;
+
+      var found = this.shipIn(shot.x, shot.y);
       if (found >= 0) {
         this.shots.splice(index, 1);
-        this.ship.color = this.deadColor;
+        this.ship.destroyed = true;
         this.ship.draw();
+
+        this.lives--;
+
+        if (this.lives > 0) this.wait = 1;
+        else this.wait = 0;
+        this.drawHead();
       }
     });
   }
   private tickMartians(): void {
+    var move = this.martianMove;
     var next = this.getNext();
     this.toMove = next;
     const martian: Martian = this.martians[next];
     if (this.direction > 0) {
-      if (martian.x < this.maxX) {
-        martian.x++;
+      if (martian.x < this.martianMaxX) {
+        martian.x += move;
         martian.draw();
       } else {
         this.direction = -1;
@@ -200,7 +242,7 @@ export class AppComponent implements OnInit {
       }
     } else {
       if (martian.x > 1) {
-        martian.x--;
+        martian.x -= move;
         martian.draw();
       } else {
         this.direction = 1;
@@ -209,12 +251,20 @@ export class AppComponent implements OnInit {
     }
     var shot = martian.fire();
     if (shot) this.shot(shot);
-    if (martian.color == 'white') {
+    if (martian.destroyed) {
       martian.destroy();
       this.martians.splice(next, 1);
     }
   }
   private tickShip() {
+    if (this.wait !=-1) {
+      if (this.shots.length>0)
+        return;
+    }
+    if (this.wait !=-1 && this.lives == 0) 
+          this.gameOver();
+      else this.nextShip();
+    }
     this.ship.moving();
     this.ship.draw();
   }
@@ -256,6 +306,7 @@ export class AppComponent implements OnInit {
       martian.draw();
     });
     this.ship.draw();
+    this.drawHead();
   }
 
   private getLast(): number {
@@ -263,17 +314,18 @@ export class AppComponent implements OnInit {
   }
 
   fire() {
-    const square = this.ship.fire();
-    this.squares.push(square);
-    //DEBUG console.log('SQ: ' + this.squares.length);
+    if (this.squares.length == 0) {
+      const square = this.ship.fire();
+      this.squares.push(square);
+    }
   }
 
   shot(shot: Shot) {
     this.shots.push(shot);
   }
 
-  addMartian(x, y, z, type: string): Martian {
-    const martian = new Martian(this.ctx, x, y, z, type);
+  addMartian(x, y): Martian {
+    const martian = new Martian(this.ctx, x, y);
     this.martians.push(martian);
     return martian;
   }
@@ -283,5 +335,35 @@ export class AppComponent implements OnInit {
     clearInterval(this.interval2);
     clearInterval(this.interval3);
     cancelAnimationFrame(this.requestId);
+  }
+
+  clean() {
+    this.ctx.fillStyle = this.bgColor;
+    this.ctx.clearRect(0, 0, 640, 60);
+  }
+  drawHead() {
+    this.clean();
+    var posLives = 250;
+    var size = 32;
+    for (var i = 0; i < this.lives; i++) {
+      this.ctx.drawImage(this.imgLive, posLives + 32 * i, 12);
+    }
+    //Lucida Console", "Courier New", monospace
+    //this.ctx.font = "italic small-caps bold 40px Helvetica, Arial, sans-serif";
+    this.ctx.font = 'small-caps bold 16px Helvetica, Arial, sans-serif';
+    this.ctx.fillStyle = 'Red';
+    var txt = ' ' + this.score;
+    this.ctx.fillText(txt, 150, 32);
+  }
+
+  gameOver() {
+    this.ctx.font = 'small-caps bold 16px Helvetica, Arial, sans-serif';
+    this.ctx.fillStyle = 'White';
+    var txt = 'GAME OVER';
+    this.ctx.fillText(txt, 200, 300);
+  }
+  nextShip() {
+    this.wait = -1;
+    this.ship.destroyed = false;
   }
 }

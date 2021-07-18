@@ -3,13 +3,22 @@
   <table>
     <tr>
       <td>Pause: {{linkDashService.app.pause}}</td>
-      <td>Units: {{linkDashService.app.martians.length}} - {{linkDashService.app.squares.length}} -
-        {{linkDashService.app.shots.length}}</td>
-      <td>Into: {{linkDashService.app.into1}} / {{linkDashService.app.into2}} /{{linkDashService.app.into3}}</td>
+      <td>
+        Units: {{linkDashService.app.martians.length}} -
+        {{linkDashService.app.squares.length}} -
+        {{linkDashService.app.shots.length}}
+      </td>
+      <td>
+        Into: {{linkDashService.app.into1}} / {{linkDashService.app.into2}}
+        /{{linkDashService.app.into3}}
+      </td>
     </tr>
     <tr>
       <td>toMove: {{linkDashService.app.toMove}}</td>
-      <td>toMove: {{linkDashService.app.martians[linkDashService.app.toMove].color}}</td>
+      <td>
+        toMove:
+        {{linkDashService.app.martians[linkDashService.app.toMove].color}}
+      </td>
       <td></td>
     </tr>
   </table>
@@ -19,8 +28,15 @@
   </ag-grid-angular>
 </div>-->
 
-  <h3>Messages <button class="clear"
-  (click)="linkDashService.clear()">Clear</button></h3>
+  <h3>
+    Messages
+    <button class="clear" (click)="linkDashService.clear()">Clear</button>
+  </h3>
   <div *ngIf="linkDashService.messages.length">
-    <div *ngFor='let message of linkDashService.messages'> {{message}} </div>
+    <div *ngFor="let message of linkDashService.messages">{{message}}</div>
   </div>
+  <!--
+  <img src="https://i.ibb.co/DfwQDcX/mar-sold-1.png" />
+  <img src="https://i.ibb.co/3Fg69gZ/ship.png" alt="ship" border="0" />
+  -->
+</div>

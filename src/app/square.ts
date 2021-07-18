@@ -17,7 +17,7 @@ export class Square {
 
   draw(): boolean {
     this.ctx.fillStyle = this.bgColor;
-    this.ctx.clearRect(this.lastX - 1, this.lastY - 1, this.z + 1, this.z + 1);
+    this.ctx.clearRect(this.lastX - 2, this.lastY - 2, this.z + 4, this.z + 4);
     this.y += this.speed;
     this.lastX = this.x;
     this.lastY = this.y;
