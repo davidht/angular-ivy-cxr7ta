@@ -12,6 +12,8 @@ export class Martian {
 
   private rndFire = 0.8;
 
+  private image1;
+
   constructor(private ctx: CanvasRenderingContext2D, x, y, z, type: string) {
     this.x = x;
     this.y = y;
@@ -21,6 +23,9 @@ export class Martian {
     if (type == 'soldier') {
       this.color = 'red';
     }
+
+    this.image1 = new Image();
+    this.image1.src = '../assets/mar-sold-1.png';
   }
   public isInto(x, y): boolean {
     var x0 = this.x * this.z;
@@ -40,12 +45,13 @@ export class Martian {
     this.ctx.fillStyle = this.color;
     this.lastX = this.x;
     this.lastY = this.y;
-    this.ctx.fillRect(
+    /*this.ctx.fillRect(
       this.z * this.x + 2,
       this.z * this.y + 2,
       this.z - 2,
       this.z - 2
-    );
+    );*/
+    this.ctx.drawImage(this.image1, this.z * this.x + 2, this.z * this.y + 2);
   }
   fire(): Shot {
     if (Math.random() > this.rndFire) {

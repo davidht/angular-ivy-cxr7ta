@@ -8,7 +8,7 @@ import { Martian } from './martian';
 import { Square } from './square';
 import { Ship } from './ship';
 import { Shot } from './shot';
- 
+
 @Component({
   selector: 'my-app',
   templateUrl: './app.component.html',
@@ -59,12 +59,17 @@ export class AppComponent implements OnInit {
   into3 = 0;
   pause = true;
 
+  image1;
+
   ngOnInit(): void {
     this.ctx = this.canvas.nativeElement.getContext('2d');
 
     this.ctx.fillStyle = 'red';
 
     this.maxX = this.ctx.canvas.width / this.size - 2;
+
+    this.image1 = new Image();
+    this.image1.src = '../assets/mar-sold-1.png';
 
     this.createMartians();
     this.createShip();
