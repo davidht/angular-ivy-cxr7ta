@@ -8,7 +8,7 @@ import { Martian } from './martian';
 import { Square } from './square';
 import { Ship } from './ship';
 import { Shot } from './shot';
-
+ 
 @Component({
   selector: 'my-app',
   templateUrl: './app.component.html',
